@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Log in</h1>
+    <p class="subtitle">Enter the name and password you signed up with.</p>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Your name" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Your password" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="primary" id="loginBtn">Log in</button>
+    </form>
+
+    <p class="switch">New here? <a href="signup.html">Sign up</a></p>
+  </main>
+
+  <div class="popup-backdrop" id="popup">
+    <div class="popup" id="popupBox">
+      <p id="popupText"></p>
+      <button type="button" id="popupClose">OK</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

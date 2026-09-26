@@ -1,0 +1,83 @@
+/* =========== Animated anime pop-up =========== */
+.popup-backdrop.show { animation: pp-fade 0.2s ease-out; }
+
+.popup.popup-anime {
+  position: relative;
+  max-width: 360px;
+  padding: 0 24px 22px;
+  border-top: none;
+  border-radius: 20px;
+  text-align: center;
+  background: #ffffff;
+  overflow: visible;
+  box-shadow: 0 20px 50px rgba(35, 22, 58, 0.3);
+}
+.popup-anime.pp-in { animation: pp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.popup-anime.pp-in.pp-error { animation: pp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, pp-shake 0.45s 0.5s ease-in-out; }
+
+.pp-art {
+  width: 150px; height: 150px;
+  margin: -78px auto 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 60%, #f6eefe 0 62%, #ffffff 63%);
+  border: 4px solid #ffffff;
+  box-shadow: 0 6px 18px rgba(91, 42, 134, 0.18);
+}
+.pp-error .pp-art { background: radial-gradient(circle at 50% 60%, #fdeef2 0 62%, #ffffff 63%); }
+.pp-art svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+.pp-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; color: #d9365a; }
+.pp-success .pp-title { color: #1f9d55; }
+.popup-anime p { color: #4a3d63; margin-bottom: 18px; line-height: 1.5; }
+.popup-anime button {
+  padding: 10px 30px; border: none; border-radius: 999px;
+  background: #5b2a86; color: #fff; font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.popup-anime button:hover { background: #3f1766; }
+.popup-anime button:focus-visible { outline: 3px solid #c9a8ef; outline-offset: 2px; }
+
+/* ---- Character motion ---- */
+.pp-girl  { animation: pp-bob 2.4s ease-in-out infinite; transform-origin: 80px 150px; }
+.pp-error .pp-head { animation: pp-tilt 2.4s ease-in-out infinite; transform-origin: 80px 128px; }
+.pp-tail-l { animation: pp-swing-l 1.6s ease-in-out infinite; transform-origin: 42px 76px; }
+.pp-tail-r { animation: pp-swing-r 1.6s ease-in-out infinite; transform-origin: 118px 76px; }
+.pp-eyes  { animation: pp-blink 3.2s infinite; transform-origin: 80px 98px; }
+.pp-sweat { animation: pp-sweat 1.8s ease-in infinite; }
+.pp-mark  { animation: pp-mark 1.2s ease-in-out infinite; transform-origin: 134px 44px; }
+.pp-spark { animation: pp-twinkle 1.4s ease-in-out infinite; }
+.pp-spark.s2 { animation-delay: 0.5s; }
+.pp-spark.s3 { animation-delay: 0.9s; }
+
+@keyframes pp-fade { from { opacity: 0; } }
+@keyframes pp-pop { from { opacity: 0; transform: scale(0.6) translateY(30px); } }
+@keyframes pp-shake {
+  20%, 60% { transform: translateX(-7px); }
+  40%, 80% { transform: translateX(7px); }
+}
+@keyframes pp-bob { 50% { transform: translateY(-4px); } }
+@keyframes pp-tilt { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes pp-swing-l { 50% { transform: rotate(8deg); } }
+@keyframes pp-swing-r { 50% { transform: rotate(-8deg); } }
+@keyframes pp-blink { 0%, 44%, 50%, 100% { transform: scaleY(1); } 47% { transform: scaleY(0.1); } }
+@keyframes pp-sweat {
+  0%   { transform: translateY(-4px); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { transform: translateY(10px); opacity: 1; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+@keyframes pp-mark { 50% { transform: scale(1.25) rotate(8deg); } }
+@keyframes pp-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
+.pp-spark { transform-box: fill-box; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-anime, .popup-anime *, .popup-backdrop.show { animation: none !important; }
+}
+
+/* ---- Confirm (Yes / No) ---- */
+.pp-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.popup-anime button.pp-danger { background: #d9365a; }
+.popup-anime button.pp-danger:hover { background: #b3223f; }
+.popup-anime button.pp-cancel {
+  background: #ffffff; color: #5b2a86; border: 1.5px solid #d9c8ee;
+}
+.popup-anime button.pp-cancel:hover { background: #f2ebfa; }

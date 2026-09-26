@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View & Edit Task</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C11 31 4 23 4 9c8 0 13 5 16 13 3-8 8-13 16-13 0 14-7 22-16 25z" fill="#7b3fc4"/><path d="M20 34c-4-6-5-14-2.5-21 1.4 2.2 2.1 5 2.5 8 .4-3 1.1-5.8 2.5-8C25 20 24 28 20 34z" fill="#c3a2ec"/></svg>
+      <div><strong>Management Support</strong><span>Admin panel</span></div>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <a class="nav-item" href="home.html"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span><span data-username></span> Dashboard</span></a>
+      <a class="nav-sub" href="home.html">Dashboard</a>
+      <a class="nav-item current" href="add-task.html"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 13l2 2 4-4"/></svg><span>Task</span></a>
+      <a class="nav-sub" href="add-task.html">Add Task</a>
+      <a class="nav-sub current" href="view-tasks.html">View &amp; Edit Task</a>
+    </nav>
+    <button type="button" class="nav-item logout" id="logoutBtn"><svg class="ico" viewBox="0 0 24 24"><path d="M15 12H4"/><path d="M8 8l-4 4 4 4"/><path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg><span>Log out</span></button>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <h1>MY HEALTH SCHOOL</h1>
+      <div class="avatar" id="avatar">?</div>
+    </header>
+
+    <main class="content">
+      <div class="section-head">
+        <h2>View &amp; Edit Task</h2>
+        <span class="sync" id="syncText"></span>
+        <button type="button" class="icon-btn" id="refreshBtn" title="Reload from sheet" aria-label="Reload from sheet"><svg class="ico" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><h3>My tasks</h3><span class="count" id="taskCount"></span></div>
+          <div class="filters">
+            <input type="search" id="search" placeholder="Search title, ID, category" aria-label="Search tasks" />
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="">All statuses</option>
+              <option>Not Started</option><option>Pending</option><option>Ongoing</option>
+              <option>Hold</option><option>Completed</option><option>Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Task</th><th>Priority</th><th>Status</th><th>Start</th><th>Due</th><th>Updated</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="taskRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="modal-backdrop" id="editModal">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modal-head">
+            <h3 id="modalTitle">Edit task</h3>
+            <button type="button" class="icon-btn" id="modalClose" aria-label="Close">✕</button>
+          </div>
+          <form id="editForm" novalidate>
+            <div class="form-fields"></div>
+            <div class="form-actions">
+              <button type="button" class="btn-danger" id="modalDelete">Delete task</button>
+              <button type="button" class="btn-ghost" id="modalCancel">Cancel</button>
+              <button type="submit" class="btn-primary" id="modalSave">Save changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="popup-backdrop" id="popup">
+  <div class="popup" id="popupBox" role="alertdialog" aria-live="assertive">
+    <p id="popupText"></p>
+    <button type="button" id="popupClose">OK</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script src="popup.js"></script>
+<script src="shell.js"></script>
+<script src="task-form.js"></script>
+<script src="view-tasks.js"></script>
+</body>
+</html>
