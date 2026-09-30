@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Add Task</title>
+  <title>Add Reminder</title>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="dashboard.css" />
 </head>
@@ -18,11 +18,11 @@
       <a class="nav-item" href="home.html"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span><span data-username></span> Dashboard</span></a>
       <a class="nav-sub" href="home.html">Dashboard</a>
       <a class="nav-item current" href="add-task.html"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 13l2 2 4-4"/></svg><span>Task</span></a>
-      <a class="nav-sub current" href="add-task.html">Add Task</a>
+      <a class="nav-sub" href="add-task.html">Add Task</a>
       <a class="nav-sub" href="view-tasks.html">View &amp; Edit Task</a>
       <a class="nav-sub" data-admin href="assign-task.html">Assign Task</a>
       <a class="nav-sub" data-admin href="assigned-tasks.html">View &amp; Edit Assigned Task</a>
-      <a class="nav-sub" href="add-reminder.html">Add Reminder</a>
+      <a class="nav-sub current" href="add-reminder.html">Add Reminder</a>
       <a class="nav-sub" href="reminders.html">View Reminders</a>
     </nav>
     <button type="button" class="nav-item logout" id="logoutBtn"><svg class="ico" viewBox="0 0 24 24"><path d="M15 12H4"/><path d="M8 8l-4 4 4 4"/><path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg><span>Log out</span></button>
@@ -53,16 +53,15 @@
 
     <main class="content">
       <div class="section-head">
-        <h2>Add Task</h2>
-        <a class="link" href="view-tasks.html">View &amp; edit tasks</a>
+        <h2>Add Reminder</h2>
+        <a class="link" href="reminders.html">View reminders</a>
       </div>
-
       <section class="panel add-panel">
-        <div class="panel-head"><h3>New task</h3></div>
-        <form id="taskForm" novalidate>
+        <div class="panel-head"><h3>New reminder</h3></div>
+        <form id="reminderForm" novalidate>
           <div class="form-fields"></div>
           <div class="form-actions">
-            <button type="submit" class="btn-primary" id="saveBtn">Save task</button>
+            <button type="submit" class="btn-primary" id="saveBtn">Save reminder</button>
             <button type="button" class="btn-ghost" id="clearBtn">Clear form</button>
           </div>
         </form>
@@ -82,6 +81,7 @@
 <script src="popup.js"></script>
 <script src="shell.js"></script>
 <script src="task-form.js"></script>
-<script src="add-task.js"></script>
+<script src="reminder-form.js"></script>
+<script src="add-reminder.js"></script>
 </body>
 </html>

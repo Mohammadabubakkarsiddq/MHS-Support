@@ -3,7 +3,14 @@
 // Load AFTER script.js
 // =============================================================
 const CURRENT_USER = sessionStorage.getItem("username");
-if (!CURRENT_USER) window.location.replace("index.html"); // not logged in
+const CURRENT_ROLE = sessionStorage.getItem("role") || "Employee";
+const IS_ADMIN = CURRENT_ROLE === "Admin";
+if (!CURRENT_USER || !sessionStorage.getItem("token")) window.location.replace("index.html"); // not logged in
+
+// Admin-only menu items and pages
+if (IS_ADMIN) document.body.classList.add("is-admin");
+if (document.body.dataset.adminPage !== undefined && !IS_ADMIN) window.location.replace("home.html");
+document.querySelectorAll("[data-role-label]").forEach((el) => (el.textContent = IS_ADMIN ? "Admin panel" : "Employee panel"));
 
 const STATUS_LIST = ["Not Started", "Pending", "Ongoing", "Hold", "Completed", "Cancelled"];
 const STATUS_COLORS = {
@@ -23,11 +30,35 @@ if (avatarEl && CURRENT_USER) {
   avatarEl.title = CURRENT_USER;
 }
 
-// Log out
-document.getElementById("logoutBtn")?.addEventListener("click", () => {
-  sessionStorage.removeItem("username");
+// ---------- Profile menu (top-right avatar) ----------
+const profile = document.getElementById("profile");
+if (profile && CURRENT_USER) {
+  const initial = CURRENT_USER.charAt(0).toUpperCase();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("pmAvatar", initial);
+  set("pmName", CURRENT_USER);
+  set("pmRole", CURRENT_ROLE);
+  set("pmEmail", sessionStorage.getItem("email") || "–");
+  set("pmNumber", sessionStorage.getItem("number") || "–");
+
+  const btn = document.getElementById("avatar");
+  const toggle = (open) => {
+    profile.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", open);
+  };
+  btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(!profile.classList.contains("open")); });
+  document.addEventListener("click", (e) => { if (!profile.contains(e.target)) toggle(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") toggle(false); });
+}
+
+// ---------- Log out (sidebar + profile menu) ----------
+async function logOut() {
+  try { await Promise.race([callSheet({ action: "logout" }), new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
+  sessionStorage.clear();
   window.location.href = "index.html";
-});
+}
+document.getElementById("logoutBtn")?.addEventListener("click", logOut);
+document.getElementById("menuLogout")?.addEventListener("click", logOut);
 
 // Mobile menu
 document.getElementById("menuBtn")?.addEventListener("click", () => document.body.classList.toggle("nav-open"));
@@ -54,6 +85,12 @@ function timeAgo(date) {
 function isOverdue(t) {
   return t.status !== "Completed" && t.status !== "Cancelled" && t.dueDate && t.dueDate < toISO(new Date());
 }
+function assignedChip(t) {
+  return t.assignedBy ? `<span class="chip">Assigned by ${esc(t.assignedBy)}</span>` : "";
+}
+function isAssignedToMe(t) {
+  return Boolean(t.assignedBy) && t.assignedBy.toLowerCase() !== String(CURRENT_USER).toLowerCase();
+}
 function statusBadge(status) {
   const slug = String(status || "").replace(/\s+/g, "-");
   return `<span class="badge st-${esc(slug)}">${esc(status)}</span>`;
@@ -69,4 +106,51 @@ async function fetchMyTasks() {
   const res = await callSheet({ action: "getTasks", name: CURRENT_USER });
   if (res.status !== "success") throw new Error(res.message);
   return res.tasks;
+}
+
+// ---------- Reminders ----------
+const REMINDER_CATEGORIES = ["Meeting", "Mail", "Update", "Follow-up", "Call", "Payment", "Other"];
+const REMINDER_STAGES = [["first", "1st"], ["second", "2nd"], ["final", "Final"]];
+
+async function fetchMyReminders() {
+  const res = await callSheet({ action: "getReminders", name: CURRENT_USER });
+  if (res.status !== "success") throw new Error(res.message);
+  return res.reminders;
+}
+
+function daysUntil(iso) {
+  const today = new Date(toISO(new Date()) + "T00:00:00");
+  return Math.round((new Date(iso + "T00:00:00") - today) / 86400000);
+}
+
+// The next reminder date that's due, or null if the reminder is closed
+function reminderNext(r) {
+  if (r.status === "Closed") return null;
+  const today = toISO(new Date());
+  for (const [key, stage] of REMINDER_STAGES) {
+    const date = r[key];
+    if (date && date >= today) {
+      return { date, stage, days: daysUntil(date), state: date === today ? "today" : "upcoming" };
+    }
+  }
+  return { date: r.final, stage: "Final", days: daysUntil(r.final), state: "overdue" };
+}
+
+function nextBadge(n) {
+  if (!n) return `<span class="muted">–</span>`;
+  const label =
+    n.state === "today" ? "Due today" :
+    n.state === "overdue" ? `Overdue ${-n.days} day${n.days === -1 ? "" : "s"}` :
+    n.days === 1 ? "Tomorrow" : `In ${n.days} days`;
+  return `<span class="due due-${n.state}">${label}</span><br><span class="muted small">${n.stage} · ${formatDMY(n.date)}</span>`;
+}
+
+function reminderStatusBadge(r) {
+  if (r.status === "Closed") {
+    return r.closedOnTime === "Yes"
+      ? `<span class="badge st-Completed">Closed · on time</span>`
+      : `<span class="badge st-Hold">Closed · late</span>`;
+  }
+  if (r.status === "Extended") return `<span class="badge st-Pending">Extended ×${r.extendedCount || 1}</span>`;
+  return `<span class="badge st-Ongoing">Open</span>`;
 }

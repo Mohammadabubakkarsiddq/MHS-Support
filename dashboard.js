@@ -19,6 +19,8 @@ const syncText = document.getElementById("syncText");
 const refreshBtn = document.getElementById("refreshBtn");
 
 let allTasks = [];
+let allReminders = [];
+let reminderError = "";
 let charts = {};
 let lastSync = null;
 
@@ -44,20 +46,28 @@ function daysBetween(fromIso, toIso) {
 }
 
 async function loadTasks() {
-  syncText.textContent = "Loading tasks...";
+  syncText.textContent = "Loading...";
   refreshBtn.classList.add("spinning");
-  try {
-    allTasks = await fetchMyTasks();
+  const [taskResult, remResult] = await Promise.allSettled([fetchMyTasks(), fetchMyReminders()]);
+
+  if (remResult.status === "fulfilled") {
+    allReminders = remResult.value;
+    reminderError = "";
+  } else {
+    reminderError = serverError(remResult.reason);
+  }
+
+  if (taskResult.status === "fulfilled") {
+    allTasks = taskResult.value;
     lastSync = new Date();
     render();
-  } catch (err) {
+    showTodaysReminders();
+  } else {
     syncText.textContent = "Could not load tasks";
-    showPopup(err instanceof TypeError
-      ? "Could not reach the server. Check the SCRIPT_URL in script.js."
-      : err.message);
-  } finally {
-    refreshBtn.classList.remove("spinning");
+    renderReminders();
+    showPopup(serverError(taskResult.reason));
   }
+  refreshBtn.classList.remove("spinning");
 }
 
 function updateSyncText() {
@@ -83,6 +93,7 @@ function render() {
   drawStatusChart(list);
   drawDailyChart(list, days);
   renderTable(list);
+  renderReminders();
   updateSyncText();
 }
 
@@ -188,13 +199,69 @@ function renderTable(list) {
   rows.innerHTML = sorted.map((t) => `
     <tr>
       <td class="nowrap muted">${esc(t.id)}</td>
-      <td><a href="view-tasks.html?edit=${encodeURIComponent(t.id)}">${esc(t.title)}</a></td>
+      <td><a href="view-tasks.html?edit=${encodeURIComponent(t.id)}">${esc(t.title)}</a>${t.assignedBy ? `<br>${assignedChip(t)}` : ""}</td>
       <td>${esc(t.category)}</td>
       <td class="prio-${esc(t.priority)}">${esc(t.priority)}</td>
       <td>${statusBadge(t.status)}</td>
       <td class="nowrap">${formatDMY(t.startDate)}</td>
       <td class="nowrap ${isOverdue(t) ? "overdue" : ""}">${formatDMY(t.dueDate)}</td>
     </tr>`).join("");
+}
+
+// ---------- Reminders (always shows current state, not the date range) ----------
+function renderReminders() {
+  const stats = document.getElementById("remStats");
+  const rows = document.getElementById("remRows");
+  if (reminderError) {
+    stats.innerHTML = "";
+    rows.innerHTML = `<tr class="empty-row"><td colspan="5">Couldn't load reminders: ${esc(reminderError)}</td></tr>`;
+    return;
+  }
+  const active = allReminders.filter((r) => r.status !== "Closed");
+  const withNext = active.map((r) => ({ r, n: reminderNext(r) }));
+  const dueToday = withNext.filter((x) => x.n.state === "today").length;
+  const overdue = withNext.filter((x) => x.n.state === "overdue").length;
+  const closed = allReminders.filter((r) => r.status === "Closed");
+  const onTime = closed.filter((r) => r.closedOnTime === "Yes").length;
+
+  const mini = (label, value, line, color, href) => `
+    <a class="panel mini" style="--accent:${color}" href="${href}">
+      <h3>${label}</h3>
+      <div class="mini-value">${value}</div>
+      <p class="stat-line">${line}</p>
+    </a>`;
+  stats.innerHTML =
+    mini("Active", active.length, `Extended: <b>${active.filter((r) => r.status === "Extended").length}</b>`, "#5b2a86", "reminders.html") +
+    mini("Due today", dueToday, "Any stage due today", "#e8890c", "reminders.html?view=due") +
+    mini("Overdue", overdue, "Final date passed", "#d9365a", "reminders.html?view=due") +
+    mini("Closed", closed.length, `On time: <b>${onTime}</b>`, "#1f9d55", "reminders.html?view=closed");
+
+  const upcoming = withNext
+    .sort((a, b) => ((a.n.state === "overdue" ? "0" : "1") + a.n.date).localeCompare((b.n.state === "overdue" ? "0" : "1") + b.n.date))
+    .slice(0, 6);
+  rows.innerHTML = upcoming.length
+    ? upcoming.map(({ r, n }) => `
+      <tr>
+        <td class="nowrap muted">${esc(r.id)}</td>
+        <td class="title-cell">${esc(r.description)}<br><span class="muted">${esc(r.category)}</span></td>
+        <td class="prio-${esc(r.priority)}">${esc(r.priority)}</td>
+        <td class="nowrap">${nextBadge(n)}</td>
+        <td>${reminderStatusBadge(r)}</td>
+      </tr>`).join("")
+    : `<tr class="empty-row"><td colspan="5">No active reminders. <a href="add-reminder.html">Add a reminder</a></td></tr>`;
+}
+
+// Pop-up once per login when reminders are due today (or overdue)
+function showTodaysReminders() {
+  if (reminderError || sessionStorage.getItem("remindersShown")) return;
+  sessionStorage.setItem("remindersShown", "1");
+  const due = allReminders
+    .filter((r) => r.status !== "Closed")
+    .map((r) => ({ r, n: reminderNext(r) }))
+    .filter(({ n }) => n.state === "today" || n.state === "overdue")
+    .sort((a, b) => (a.n.state === "today" ? 0 : 1) - (b.n.state === "today" ? 0 : 1))
+    .map(({ r, n }) => ({ id: r.id, description: r.description, stage: n.stage, state: n.state, date: n.date }));
+  if (due.length) showReminderPopup(due, () => (window.location.href = "reminders.html?view=due"));
 }
 
 // ---------- Events ----------

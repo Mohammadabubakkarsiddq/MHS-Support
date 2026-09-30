@@ -1,83 +1,97 @@
-/* =========== Animated anime pop-up =========== */
+/* =========== Video pop-ups =========== */
+.popup-anime [hidden], .popup-backdrop [hidden] { display: none !important; }
 .popup-backdrop.show { animation: pp-fade 0.2s ease-out; }
 
 .popup.popup-anime {
   position: relative;
+  width: 100%;
   max-width: 360px;
-  padding: 0 24px 22px;
+  padding: 18px 22px 22px;
+  border: none;
   border-top: none;
-  border-radius: 20px;
-  text-align: center;
+  border-radius: 22px;
   background: #ffffff;
-  overflow: visible;
-  box-shadow: 0 20px 50px rgba(35, 22, 58, 0.3);
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(20, 6, 42, 0.35);
 }
 .popup-anime.pp-in { animation: pp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.popup-anime.pp-in.pp-error { animation: pp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, pp-shake 0.45s 0.5s ease-in-out; }
+.popup-anime.pp-in.pp-error,
+.popup-anime.pp-in.pp-login { animation: pp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, pp-shake 0.45s 0.5s ease-in-out; }
 
-.pp-art {
-  width: 150px; height: 150px;
-  margin: -78px auto 4px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 60%, #f6eefe 0 62%, #ffffff 63%);
-  border: 4px solid #ffffff;
-  box-shadow: 0 6px 18px rgba(91, 42, 134, 0.18);
+/* Video (or backup picture) */
+.pp-art { margin: 0 auto 12px; border-radius: 16px; overflow: hidden; background: #fff; }
+.pp-art video { display: block; width: 100%; max-height: 210px; object-fit: contain; margin: 0 auto; background: #fff; }
+.pp-art img { display: block; width: 100%; max-width: 250px; height: auto; margin: 0 auto; user-select: none; }
+.pp-no-video .pp-art { margin-bottom: 10px; }
+
+/* Label pill under the video, like the picture labels */
+.pp-label {
+  display: inline-flex; align-items: center; gap: 10px; margin: 0 auto 12px;
+  padding: 6px 20px 6px 6px; border-radius: 999px; border: 2px solid;
+  font-size: 1.05rem; font-weight: 800; color: #23163a;
 }
-.pp-error .pp-art { background: radial-gradient(circle at 50% 60%, #fdeef2 0 62%, #ffffff 63%); }
-.pp-art svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.pp-label-ico { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.pp-label-ico svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pp-error .pp-label, .pp-login .pp-label { background: #fde8ec; border-color: #f4a9b8; }
+.pp-error .pp-label-ico, .pp-login .pp-label-ico { background: #e23b5a; }
+.pp-success .pp-label { background: #e6f6ec; border-color: #9fd9b5; }
+.pp-success .pp-label-ico { background: #1f9d55; }
+.pp-reminder .pp-label { background: #fff3dc; border-color: #f5c872; }
+.pp-reminder .pp-label-ico { background: #f0a20b; }
+.pp-reminder .pp-label-ico svg { fill: #fff; stroke-width: 1.5; }
+.pp-login .pp-label { font-size: 0.95rem; }
+.pp-no-video .pp-label, .pp-show-title .pp-label { display: none; }
 
-.pp-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; color: #d9365a; }
-.pp-success .pp-title { color: #1f9d55; }
-.popup-anime p { color: #4a3d63; margin-bottom: 18px; line-height: 1.5; }
+.pp-title {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.pp-show-title .pp-title {
+  position: static; width: auto; height: auto; clip: auto; white-space: normal;
+  font-size: 1.15rem; font-weight: 800; color: #3f1766; margin-bottom: 4px;
+}
+
+.popup-anime p { color: #4a3d63; margin-bottom: 16px; line-height: 1.5; font-size: 0.95rem; }
 .popup-anime button {
-  padding: 10px 30px; border: none; border-radius: 999px;
-  background: #5b2a86; color: #fff; font-weight: 700; font-family: inherit; cursor: pointer;
+  padding: 11px 26px; border: none; border-radius: 999px;
+  background: #5b2a86; color: #fff; font-weight: 700; font-family: inherit; font-size: 0.92rem; cursor: pointer;
 }
 .popup-anime button:hover { background: #3f1766; }
 .popup-anime button:focus-visible { outline: 3px solid #c9a8ef; outline-offset: 2px; }
+.pp-success button#popupClose { background: #1f9d55; }
+.pp-success button#popupClose:hover { background: #17804a; }
+.pp-reminder button#popupClose { background: #e8890c; }
+.pp-reminder button#popupClose:hover { background: #c47206; }
 
-/* ---- Character motion ---- */
-.pp-girl  { animation: pp-bob 2.4s ease-in-out infinite; transform-origin: 80px 150px; }
-.pp-error .pp-head { animation: pp-tilt 2.4s ease-in-out infinite; transform-origin: 80px 128px; }
-.pp-tail-l { animation: pp-swing-l 1.6s ease-in-out infinite; transform-origin: 42px 76px; }
-.pp-tail-r { animation: pp-swing-r 1.6s ease-in-out infinite; transform-origin: 118px 76px; }
-.pp-eyes  { animation: pp-blink 3.2s infinite; transform-origin: 80px 98px; }
-.pp-sweat { animation: pp-sweat 1.8s ease-in infinite; }
-.pp-mark  { animation: pp-mark 1.2s ease-in-out infinite; transform-origin: 134px 44px; }
-.pp-spark { animation: pp-twinkle 1.4s ease-in-out infinite; }
-.pp-spark.s2 { animation-delay: 0.5s; }
-.pp-spark.s3 { animation-delay: 0.9s; }
+/* Two buttons (confirm / reminder) */
+.pp-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.popup-anime button.pp-danger { background: #d9365a; }
+.popup-anime button.pp-danger:hover { background: #b3223f; }
+.popup-anime button.pp-cancel { background: #ffffff; color: #5b2a86; border: 1.5px solid #d9c8ee; }
+.popup-anime button.pp-cancel:hover { background: #f2ebfa; }
+
+/* Reminder list */
+.pp-list { text-align: left; margin: -6px 0 16px; display: grid; gap: 8px; max-height: 220px; overflow-y: auto; }
+.pp-item {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  padding: 9px 12px; border-radius: 12px; background: #fff8ec; border-left: 4px solid #e8890c;
+}
+.pp-item.late { background: #fdeef1; border-left-color: #d9365a; }
+.pp-item-text { font-size: 0.88rem; font-weight: 600; color: #23163a; overflow-wrap: anywhere; }
+.pp-item-tag { font-size: 0.7rem; font-weight: 800; white-space: nowrap; color: #b86a05; text-transform: uppercase; letter-spacing: 0.03em; }
+.pp-item.late .pp-item-tag { color: #d9365a; }
+.pp-more { margin: 0 !important; font-size: 0.82rem !important; color: #6f6483 !important; text-align: center; }
 
 @keyframes pp-fade { from { opacity: 0; } }
 @keyframes pp-pop { from { opacity: 0; transform: scale(0.6) translateY(30px); } }
-@keyframes pp-shake {
-  20%, 60% { transform: translateX(-7px); }
-  40%, 80% { transform: translateX(7px); }
+@keyframes pp-shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+@keyframes pp-float { 50% { transform: translateY(-6px); } }
+@keyframes pp-tilt { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+@keyframes pp-ring {
+  0%, 60%, 100% { transform: rotate(0); }
+  65% { transform: rotate(-3deg); } 70% { transform: rotate(3deg); }
+  75% { transform: rotate(-2deg); } 80% { transform: rotate(2deg); } 85% { transform: rotate(0); }
 }
-@keyframes pp-bob { 50% { transform: translateY(-4px); } }
-@keyframes pp-tilt { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
-@keyframes pp-swing-l { 50% { transform: rotate(8deg); } }
-@keyframes pp-swing-r { 50% { transform: rotate(-8deg); } }
-@keyframes pp-blink { 0%, 44%, 50%, 100% { transform: scaleY(1); } 47% { transform: scaleY(0.1); } }
-@keyframes pp-sweat {
-  0%   { transform: translateY(-4px); opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { transform: translateY(10px); opacity: 1; }
-  100% { transform: translateY(14px); opacity: 0; }
-}
-@keyframes pp-mark { 50% { transform: scale(1.25) rotate(8deg); } }
-@keyframes pp-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
-.pp-spark { transform-box: fill-box; transform-origin: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .popup-anime, .popup-anime *, .popup-backdrop.show { animation: none !important; }
 }
-
-/* ---- Confirm (Yes / No) ---- */
-.pp-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.popup-anime button.pp-danger { background: #d9365a; }
-.popup-anime button.pp-danger:hover { background: #b3223f; }
-.popup-anime button.pp-cancel {
-  background: #ffffff; color: #5b2a86; border: 1.5px solid #d9c8ee;
-}
-.popup-anime button.pp-cancel:hover { background: #f2ebfa; }

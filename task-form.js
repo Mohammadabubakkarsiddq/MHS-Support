@@ -92,3 +92,18 @@ function readTaskForm(form) {
   if (task.dueDate && task.dueDate < task.startDate) return fail("dueDate", "Due date can't be before the start date.");
   return task;
 }
+
+// Assigned tasks: the employee can change only Status and Remarks
+function lockAssignedFields(form, lockedBy) {
+  TASK_FIELDS.forEach((f) => {
+    if (f !== "status" && f !== "remarks") form.elements[f].disabled = Boolean(lockedBy);
+  });
+  let note = form.querySelector(".lock-note");
+  if (!note) {
+    note = document.createElement("p");
+    note.className = "lock-note";
+    form.prepend(note);
+  }
+  note.hidden = !lockedBy;
+  note.textContent = lockedBy ? `Assigned by ${lockedBy}. You can update the status and remarks.` : "";
+}

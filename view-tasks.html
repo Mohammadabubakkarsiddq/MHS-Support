@@ -12,7 +12,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C11 31 4 23 4 9c8 0 13 5 16 13 3-8 8-13 16-13 0 14-7 22-16 25z" fill="#7b3fc4"/><path d="M20 34c-4-6-5-14-2.5-21 1.4 2.2 2.1 5 2.5 8 .4-3 1.1-5.8 2.5-8C25 20 24 28 20 34z" fill="#c3a2ec"/></svg>
-      <div><strong>Management Support</strong><span>Admin panel</span></div>
+      <div><strong>Management Support</strong><span data-role-label>Admin panel</span></div>
     </div>
     <nav class="nav" aria-label="Main">
       <a class="nav-item" href="home.html"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span><span data-username></span> Dashboard</span></a>
@@ -20,6 +20,10 @@
       <a class="nav-item current" href="add-task.html"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 13l2 2 4-4"/></svg><span>Task</span></a>
       <a class="nav-sub" href="add-task.html">Add Task</a>
       <a class="nav-sub current" href="view-tasks.html">View &amp; Edit Task</a>
+      <a class="nav-sub" data-admin href="assign-task.html">Assign Task</a>
+      <a class="nav-sub" data-admin href="assigned-tasks.html">View &amp; Edit Assigned Task</a>
+      <a class="nav-sub" href="add-reminder.html">Add Reminder</a>
+      <a class="nav-sub" href="reminders.html">View Reminders</a>
     </nav>
     <button type="button" class="nav-item logout" id="logoutBtn"><svg class="ico" viewBox="0 0 24 24"><path d="M15 12H4"/><path d="M8 8l-4 4 4 4"/><path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg><span>Log out</span></button>
   </aside>
@@ -28,7 +32,23 @@
     <header class="topbar">
       <button type="button" class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <h1>MY HEALTH SCHOOL</h1>
-      <div class="avatar" id="avatar">?</div>
+      <div class="profile" id="profile">
+        <button type="button" class="avatar avatar-btn" id="avatar" aria-haspopup="true" aria-expanded="false" aria-controls="profileMenu">?</button>
+        <div class="profile-menu" id="profileMenu" role="menu">
+          <div class="pm-head">
+            <div class="pm-avatar" id="pmAvatar">?</div>
+            <div><strong id="pmName"></strong><span class="chip" id="pmRole"></span></div>
+          </div>
+          <dl class="pm-details">
+            <dt>Mail ID</dt><dd id="pmEmail">–</dd>
+            <dt>Mobile</dt><dd id="pmNumber">–</dd>
+          </dl>
+          <button type="button" class="pm-logout" id="menuLogout" role="menuitem">
+            <svg class="ico" viewBox="0 0 24 24"><path d="M15 12H4"/><path d="M8 8l-4 4 4 4"/><path d="M13 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg>
+            Log out
+          </button>
+        </div>
+      </div>
     </header>
 
     <main class="content">

@@ -1,6 +1,11 @@
 // =============================================================
-// Animated anime-girl pop-up. Load AFTER script.js —
-// it replaces the plain showPopup() with this animated one.
+// Video pop-ups. Load AFTER script.js — replaces the plain
+// showPopup() with one that plays the character videos:
+//   popup-error.mp4    → general errors
+//   popup-login.mp4    → wrong mail ID / password
+//   popup-success.mp4  → saved, updated, done
+//   popup-reminder.mp4 → reminders due today
+// The .png pictures are the backup if a video can't play.
 // =============================================================
 (function loadPopupCss() {
   const link = document.createElement("link");
@@ -9,103 +14,114 @@
   document.head.appendChild(link);
 })();
 
-function popupGirl(mood) {
-  const happy = mood === "success";
-  const hair = "#4b2170";
+const POPUP_KINDS = {
+  error:    { video: "popup-error.mp4",    poster: "popup-error.jpg",    img: "popup-error.png",
+              label: "Error",                      button: "OK, I'll fix it" },
+  login:    { video: "popup-login.mp4",    poster: "popup-login.jpg",    img: "popup-login.png",
+              label: "Incorrect User or Password", button: "Try again" },
+  success:  { video: "popup-success.mp4",  poster: "popup-success.jpg",  img: "popup-success.png",
+              label: "Done Successfully",          button: "OK" },
+  reminder: { video: "popup-reminder.mp4", poster: "popup-reminder.jpg", img: "popup-reminder.png",
+              label: "Reminder",                   button: "OK" },
+};
+const LABEL_ICONS = {
+  error:    '<svg viewBox="0 0 24 24"><path d="M12 7v6"/><circle cx="12" cy="17" r="0.6"/></svg>',
+  login:    '<svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg>',
+  success:  '<svg viewBox="0 0 24 24"><path d="M7 12.5l3.2 3.2L17 9"/></svg>',
+  reminder: '<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+};
+const REDUCED_MOTION = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const eyes = happy
-    ? `<path d="M56 100 q8 -10 16 0" stroke="#2a1740" stroke-width="3" fill="none" stroke-linecap="round"/>
-       <path d="M88 100 q8 -10 16 0" stroke="#2a1740" stroke-width="3" fill="none" stroke-linecap="round"/>`
-    : `<g class="pp-eyes">
-         <ellipse cx="64" cy="99" rx="9" ry="11" fill="#fff"/>
-         <ellipse cx="64" cy="100" rx="7" ry="9" fill="#6a34a0"/>
-         <ellipse cx="64" cy="101" rx="3.6" ry="4.6" fill="#2a1740"/>
-         <circle cx="61" cy="96" r="2.6" fill="#fff"/><circle cx="67" cy="104" r="1.2" fill="#fff"/>
-         <ellipse cx="96" cy="99" rx="9" ry="11" fill="#fff"/>
-         <ellipse cx="96" cy="100" rx="7" ry="9" fill="#6a34a0"/>
-         <ellipse cx="96" cy="101" rx="3.6" ry="4.6" fill="#2a1740"/>
-         <circle cx="93" cy="96" r="2.6" fill="#fff"/><circle cx="99" cy="104" r="1.2" fill="#fff"/>
-       </g>`;
+// Warm up the videos and posters in the background so pop-ups open instantly
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    Object.values(POPUP_KINDS).forEach((k) => {
+      new Image().src = k.poster;
+      if (!REDUCED_MOTION) fetch(k.video).catch(() => {});
+    });
+  }, 1200);
+});
 
-  const brows = happy
-    ? `<path d="M56 85 q8 -4 15 0" stroke="${hair}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-       <path d="M89 85 q8 -4 15 0" stroke="${hair}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
-    : `<path d="M56 86 L70 81" stroke="${hair}" stroke-width="2.6" stroke-linecap="round"/>
-       <path d="M90 81 L104 86" stroke="${hair}" stroke-width="2.6" stroke-linecap="round"/>`;
-
-  const mouth = happy
-    ? `<path d="M72 114 q8 9 16 0 z" fill="#b8475e"/>`
-    : `<ellipse cx="80" cy="119" rx="4" ry="3.6" fill="#b8475e"/>`;
-
-  const extras = happy
-    ? `<path class="pp-spark" d="M24 40 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#f5b83d"/>
-       <path class="pp-spark s2" d="M136 34 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#c9a8ef"/>
-       <path class="pp-spark s3" d="M140 112 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#1f9d55"/>`
-    : `<path class="pp-sweat" d="M122 66 C126 74 128 78 128 81 a6 6 0 0 1 -12 0 C116 78 118 74 122 66 Z"
-             fill="#9ad8ff" stroke="#4aa8e0" stroke-width="1.2"/>
-       <text class="pp-mark" x="128" y="52" font-size="26" font-weight="900" fill="#d9365a"
-             font-family="Arial, sans-serif">!</text>`;
-
-  return `
-  <svg viewBox="0 0 160 160" aria-hidden="true">
-    <g class="pp-girl">
-      <path d="M50 160 C52 140 64 130 80 130 C96 130 108 140 110 160 Z" fill="#5b2a86"/>
-      <path d="M70 131 L80 142 L90 131 Z" fill="#fff"/>
-      <g class="pp-head">
-        <path class="pp-tail-l" d="M42 72 C18 78 12 112 22 136 C31 122 35 104 46 92 Z" fill="${hair}"/>
-        <path class="pp-tail-r" d="M118 72 C142 78 148 112 138 136 C129 122 125 104 114 92 Z" fill="${hair}"/>
-        <ellipse cx="80" cy="82" rx="47" ry="45" fill="${hair}"/>
-        <ellipse cx="80" cy="92" rx="40" ry="38" fill="#ffe6d8"/>
-        <path d="M38 92 C34 58 56 40 80 40 C104 40 126 58 122 92 C117 80 111 72 105 67
-                 C103 77 97 81 90 83 C90 75 86 69 80 64 C76 73 70 79 62 81
-                 C62 74 60 70 57 67 C49 73 43 82 38 92 Z" fill="${hair}"/>
-        <circle cx="42" cy="75" r="5" fill="#f2a7c7"/>
-        <circle cx="118" cy="75" r="5" fill="#f2a7c7"/>
-        <path d="M104 50 l8 -6 2 9 z M104 50 l-1 -10 8 4 z" fill="#f2a7c7"/>
-        ${brows}
-        ${eyes}
-        <ellipse cx="56" cy="112" rx="6" ry="3" fill="#ff9fb5" opacity="0.65"/>
-        <ellipse cx="104" cy="112" rx="6" ry="3" fill="#ff9fb5" opacity="0.65"/>
-        ${mouth}
-      </g>
-    </g>
-    ${extras}
-  </svg>`;
-}
-
-function showPopup(message, type = "error", onClose) {
-  const popup = document.getElementById("popup");
+function preparePopup(kind) {
   const box = document.getElementById("popupBox");
-  const text = document.getElementById("popupText");
-  const closeBtn = document.getElementById("popupClose");
-  const isSuccess = type === "success";
+  const cfg = POPUP_KINDS[kind] || POPUP_KINDS.error;
 
-  // Add the character + title once
   if (!box.querySelector(".pp-art")) {
     box.classList.add("popup-anime");
-    box.insertAdjacentHTML("afterbegin", `<div class="pp-art"></div><h2 class="pp-title"></h2>`);
+    box.insertAdjacentHTML("afterbegin", `
+      <div class="pp-art">
+        <video muted playsinline loop preload="auto" aria-hidden="true"></video>
+        <img class="pp-fallback" alt="" hidden />
+      </div>
+      <div class="pp-label"><span class="pp-label-ico"></span><span class="pp-label-text"></span></div>
+      <h2 class="pp-title"></h2>`);
+    document.getElementById("popupText").insertAdjacentHTML("afterend", `<div class="pp-list" hidden></div>`);
+
+    // If a video can't play, show the picture instead (it has its own label)
+    const video = box.querySelector(".pp-art video");
+    video.addEventListener("error", () => useFallback(box), true);
   }
-  box.querySelector(".pp-art").innerHTML = popupGirl(type);
-  box.querySelector(".pp-title").textContent = isSuccess ? "Yay, all done!" : "Oops! Small error";
-  text.textContent = message;
-  closeBtn.textContent = isSuccess ? "OK" : "OK, I'll fix it";
+
+  const video = box.querySelector(".pp-art video");
+  const fallback = box.querySelector(".pp-fallback");
+  box.classList.remove("pp-no-video");
+  video.hidden = false;
+  fallback.hidden = true;
+  fallback.src = cfg.img;
+  fallback.alt = cfg.label;
+  video.poster = cfg.poster;
+  if (!video.src.endsWith(cfg.video)) video.src = cfg.video;
+  try { video.currentTime = 0; } catch (e) {}
+  if (!REDUCED_MOTION) {
+    const playing = video.play();
+    if (playing) playing.catch(() => {}); // the poster frame shows if autoplay is blocked
+  }
+
+  box.querySelector(".pp-label-ico").innerHTML = LABEL_ICONS[kind] || LABEL_ICONS.error;
+  box.querySelector(".pp-label-text").textContent = cfg.label;
+  box.querySelector(".pp-title").textContent = cfg.label;
+  box.querySelector(".pp-list").hidden = true;
+
+  Object.keys(POPUP_KINDS).forEach((k) => box.classList.toggle("pp-" + k, k === kind));
+  box.classList.toggle("success", kind === "success");
+  box.classList.remove("pp-show-title");
+
+  const closeBtn = document.getElementById("popupClose");
+  closeBtn.textContent = cfg.button;
   closeBtn.classList.remove("pp-danger");
   const cancelBtn = document.getElementById("popupCancel");
   if (cancelBtn) cancelBtn.hidden = true;
-
-  box.classList.toggle("success", isSuccess);
-  box.classList.toggle("pp-success", isSuccess);
-  box.classList.toggle("pp-error", !isSuccess);
 
   // Restart the entrance animation every time
   box.classList.remove("pp-in");
   void box.offsetWidth;
   box.classList.add("pp-in");
+  return box;
+}
+
+function useFallback(box) {
+  box.querySelector(".pp-art video").hidden = true;
+  box.querySelector(".pp-fallback").hidden = false;
+  box.classList.add("pp-no-video");
+}
+
+function stopPopupVideo() {
+  const video = document.querySelector("#popupBox .pp-art video");
+  if (video) video.pause();
+}
+
+// kind: "error" (default), "success", "login", "reminder"
+function showPopup(message, kind = "error", onClose) {
+  const popup = document.getElementById("popup");
+  const closeBtn = document.getElementById("popupClose");
+  preparePopup(kind);
+  document.getElementById("popupText").textContent = message;
   popup.classList.add("show");
   closeBtn.focus();
 
   const close = () => {
     popup.classList.remove("show");
+    stopPopupVideo();
     document.removeEventListener("keydown", onKey);
     popup.onclick = null;
     if (onClose) onClose();
@@ -114,17 +130,14 @@ function showPopup(message, type = "error", onClose) {
 
   closeBtn.onclick = close;
   popup.onclick = (e) => { if (e.target === popup) close(); };
-  document.removeEventListener("keydown", popup._ppKey || (() => {}));
+  if (popup._ppKey) document.removeEventListener("keydown", popup._ppKey);
   popup._ppKey = onKey;
   setTimeout(() => document.addEventListener("keydown", onKey), 0);
 }
 
-// ---------- Yes / No confirmation (used for delete) ----------
-function showConfirm(message, opts, onYes) {
-  const { title = "Are you sure?", yesLabel = "Yes", noLabel = "Cancel" } = opts || {};
+// Adds a second button (used by confirm + reminder pop-ups)
+function ensureCancelButton() {
   const closeBtn = document.getElementById("popupClose");
-
-  // Add a second button next to OK, once
   let cancelBtn = document.getElementById("popupCancel");
   if (!cancelBtn) {
     const row = document.createElement("div");
@@ -136,13 +149,23 @@ function showConfirm(message, opts, onYes) {
     cancelBtn.className = "pp-cancel";
     row.append(cancelBtn, closeBtn);
   }
+  return cancelBtn;
+}
+
+// ---------- Yes / No confirmation (delete, close) ----------
+// opts: { title, yesLabel, noLabel, kind, danger }
+function showConfirm(message, opts, onYes) {
+  const { title = "Are you sure?", yesLabel = "Yes", noLabel = "Cancel", kind = "error", danger = true } = opts || {};
+  const closeBtn = document.getElementById("popupClose");
+  const cancelBtn = ensureCancelButton();
 
   let confirmed = false;
-  showPopup(message, "error", () => { if (confirmed && onYes) onYes(); });
+  showPopup(message, kind, () => { if (confirmed && onYes) onYes(); });
 
   document.querySelector("#popupBox .pp-title").textContent = title;
+  document.querySelector("#popupBox").classList.add("pp-show-title");
   closeBtn.textContent = yesLabel;
-  closeBtn.classList.add("pp-danger");
+  closeBtn.classList.toggle("pp-danger", danger);
   cancelBtn.textContent = noLabel;
   cancelBtn.hidden = false;
   cancelBtn.focus();
@@ -150,4 +173,54 @@ function showConfirm(message, opts, onYes) {
   const baseClose = closeBtn.onclick;
   closeBtn.onclick = () => { confirmed = true; baseClose(); };
   cancelBtn.onclick = () => { confirmed = false; baseClose(); };
+}
+
+// ---------- Reminders due today (shown after login) ----------
+// items: [{ id, description, stage, state, date }]
+function showReminderPopup(items, onView) {
+  const closeBtn = document.getElementById("popupClose");
+  const cancelBtn = ensureCancelButton();
+  let goView = false;
+
+  const today = items.filter((i) => i.state === "today").length;
+  const late = items.length - today;
+  const summary = [
+    today ? `${today} reminder${today === 1 ? " is" : "s are"} due today` : "",
+    late ? `${late} ${late === 1 ? "is" : "are"} overdue` : "",
+  ].filter(Boolean).join(" and ") + ".";
+
+  showPopup(summary, "reminder", () => { if (goView && onView) onView(); });
+  const box = document.getElementById("popupBox");
+  box.classList.remove("pp-show-title");
+
+  const list = box.querySelector(".pp-list");
+  list.innerHTML = "";
+  items.slice(0, 4).forEach((i) => {
+    const row = document.createElement("div");
+    row.className = "pp-item " + (i.state === "overdue" ? "late" : "today");
+    const text = document.createElement("span");
+    text.className = "pp-item-text";
+    text.textContent = i.description;
+    const tag = document.createElement("span");
+    tag.className = "pp-item-tag";
+    tag.textContent = i.state === "overdue" ? "Overdue" : `${i.stage} reminder`;
+    row.append(text, tag);
+    list.append(row);
+  });
+  if (items.length > 4) {
+    const more = document.createElement("p");
+    more.className = "pp-more";
+    more.textContent = `+ ${items.length - 4} more`;
+    list.append(more);
+  }
+  list.hidden = false;
+
+  closeBtn.textContent = "View reminders";
+  cancelBtn.textContent = "Later";
+  cancelBtn.hidden = false;
+  closeBtn.focus();
+
+  const baseClose = closeBtn.onclick;
+  closeBtn.onclick = () => { goView = true; baseClose(); };
+  cancelBtn.onclick = () => { goView = false; baseClose(); };
 }

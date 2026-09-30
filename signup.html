@@ -3,41 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet" />
+  <title>Sign up · Management Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="card">
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="ring ring-a"></div>
+    <div class="ring ring-b"></div>
+    <svg class="ecg" viewBox="0 0 2020 90" preserveAspectRatio="none"><path d="M0 45 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60"/></svg>
+    <svg class="ecg ecg-2" viewBox="0 0 2020 90" preserveAspectRatio="none"><path d="M0 45 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60"/></svg>
+  </div>
+  <main class="auth-card wide">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C11 31 4 23 4 9c8 0 13 5 16 13 3-8 8-13 16-13 0 14-7 22-16 25z" fill="#7b3fc4"/><path d="M20 34c-4-6-5-14-2.5-21 1.4 2.2 2.1 5 2.5 8 .4-3 1.1-5.8 2.5-8C25 20 24 28 20 34z" fill="#c3a2ec"/></svg>
+      <div><strong>Management Support</strong><span>MY HEALTH SCHOOL</span></div>
+    </div>
     <h1>Create account</h1>
-    <p class="subtitle">Fill in your details to sign up.</p>
+    <p class="subtitle">Your mail ID will be your username</p>
 
     <form id="signupForm" novalidate>
       <div class="field">
         <label for="name">Name</label>
-        <input type="text" id="name" placeholder="Your name" autocomplete="name" />
+        <input type="text" id="name" placeholder="Your full name" autocomplete="name" />
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="email">Mail ID</label>
+          <input type="email" id="email" placeholder="name@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="number">Mobile number</label>
+          <input type="tel" id="number" placeholder="10-digit number" inputmode="numeric" autocomplete="tel" />
+        </div>
       </div>
       <div class="field">
-        <label for="number">Mobile number</label>
-        <input type="tel" id="number" placeholder="10-digit number" maxlength="10" autocomplete="tel" />
+        <label>Role</label>
+        <div class="role-choice">
+          <label><input type="radio" name="role" value="Employee" checked /><span>Employee<small>My tasks &amp; reminders</small></span></label>
+          <label><input type="radio" name="role" value="Admin" /><span>Admin<small>Can also assign tasks</small></span></label>
+        </div>
       </div>
       <div class="field">
-        <label for="email">Mail ID</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="field">
-        <label for="newPassword">Create password</label>
-        <input type="password" id="newPassword" placeholder="At least 8 characters" autocomplete="new-password" />
-        <p class="hint">Must be at least 8 characters.</p>
+        <label for="newPassword">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="newPassword" placeholder="Create a password" autocomplete="new-password" />
+          <button type="button" class="pw-toggle" data-toggle="newPassword" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <ul class="pw-rules" id="pwRules">
+          <li data-rule="len">At least 8 characters</li>
+          <li data-rule="upper">One uppercase (A–Z)</li>
+          <li data-rule="lower">One lowercase (a–z)</li>
+          <li data-rule="num">One number (0–9)</li>
+          <li data-rule="special">One special (! @ # $ …)</li>
+        </ul>
       </div>
       <div class="field">
         <label for="confirmPassword">Confirm password</label>
-        <input type="password" id="confirmPassword" placeholder="Type it again" autocomplete="new-password" />
+        <div class="pw-wrap">
+          <input type="password" id="confirmPassword" placeholder="Type the password again" autocomplete="new-password" />
+          <button type="button" class="pw-toggle" data-toggle="confirmPassword" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <p class="match-note" id="matchNote" aria-live="polite"></p>
       </div>
-      <button type="submit" class="primary" id="signupBtn">Sign up</button>
+      <div class="btn-pair">
+        <button type="button" class="btn-line" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn-main" id="signupBtn">Sign up</button>
+      </div>
     </form>
 
-    <p class="switch">Already have an account? <a href="index.html">Log in</a></p>
+    <p class="switch">Already have an account? <a href="index.html">Login</a></p>
+    <div class="trust">
+      <div><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Encrypted sessions</div>
+      <div><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Role-based access</div>
+      <div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>Strong passwords</div>
+    </div>
+    <p class="foot">© 2026 My Health School · Secure access only</p>
   </main>
 
   <div class="popup-backdrop" id="popup">

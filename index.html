@@ -3,28 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet" />
+  <title>Login · Management Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="card">
-    <h1>Log in</h1>
-    <p class="subtitle">Enter the name and password you signed up with.</p>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="ring ring-a"></div>
+    <div class="ring ring-b"></div>
+    <svg class="ecg" viewBox="0 0 2020 90" preserveAspectRatio="none"><path d="M0 45 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60"/></svg>
+    <svg class="ecg ecg-2" viewBox="0 0 2020 90" preserveAspectRatio="none"><path d="M0 45 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60 h60 l8 -6 l6 6 h14 l6 -34 l8 62 l6 -28 h20 l6 -8 l8 8 h60"/></svg>
+  </div>
+  <main class="auth-card">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C11 31 4 23 4 9c8 0 13 5 16 13 3-8 8-13 16-13 0 14-7 22-16 25z" fill="#7b3fc4"/><path d="M20 34c-4-6-5-14-2.5-21 1.4 2.2 2.1 5 2.5 8 .4-3 1.1-5.8 2.5-8C25 20 24 28 20 34z" fill="#c3a2ec"/></svg>
+      <div><strong>Management Support</strong><span>MY HEALTH SCHOOL</span></div>
+    </div>
+    <h1>Welcome back</h1>
+    <p class="subtitle">Log in to your account to continue</p>
 
     <form id="loginForm" novalidate>
       <div class="field">
-        <label for="username">Username</label>
-        <input type="text" id="username" placeholder="Your name" autocomplete="username" />
+        <label for="email">Mail ID</label>
+        <input type="email" id="email" placeholder="name@example.com" autocomplete="username" autofocus />
       </div>
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Your password" autocomplete="current-password" />
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+          <button type="button" class="pw-toggle" data-toggle="password" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
       </div>
-      <button type="submit" class="primary" id="loginBtn">Log in</button>
+      <button type="submit" class="btn-main" id="loginBtn">Login</button>
     </form>
 
-    <p class="switch">New here? <a href="signup.html">Sign up</a></p>
+    <p class="switch">New here? <a href="signup.html">Create a new account</a></p>
+    <div class="trust">
+      <div><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Encrypted sessions</div>
+      <div><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Role-based access</div>
+      <div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>Strong passwords</div>
+    </div>
+    <p class="foot">© 2026 My Health School · Secure access only</p>
   </main>
 
   <div class="popup-backdrop" id="popup">
