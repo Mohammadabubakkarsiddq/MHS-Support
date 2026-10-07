@@ -51,13 +51,12 @@ if (profile && CURRENT_USER) {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") toggle(false); });
 }
 
-// ---------- Log out (sidebar + profile menu) ----------
+// ---------- Log out (profile menu) ----------
 async function logOut() {
   try { await Promise.race([callSheet({ action: "logout" }), new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
   sessionStorage.clear();
   window.location.href = "index.html";
 }
-document.getElementById("logoutBtn")?.addEventListener("click", logOut);
 document.getElementById("menuLogout")?.addEventListener("click", logOut);
 
 // Mobile menu

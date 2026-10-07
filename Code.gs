@@ -1,7 +1,7 @@
 // =============================================================
 // Google Apps Script backend — paste into Extensions > Apps Script
 // Handles: signup, login (Admin / Employee) with session tokens,
-// tasks (get/add/update/delete + admin assign), and reminders
+// tasks (get/add/update/delete + admin assign), reminders and calendar
 // =============================================================
 
 const USERS_SHEET = "Users";
@@ -501,13 +501,145 @@ function deleteReminder(data) {
   return { status: "success", id: data.id };
 }
 
+// =============================================================
+// MY CALENDAR (Plan vs Actual, 9:00 AM – 6:00 PM)
+// =============================================================
+const CALENDAR_SHEET = "Calendar";
+const CAL_HEADERS = [
+  "Entry ID", "Username", "Date", "Day", "Type", "Start Time", "End Time", "Hours",
+  "Activity", "Color", "Notes", "Created On", "Last Updated"
+];
+const CAL_TYPES = ["Plan", "Actual"];
+const CAL_DAY_START = 9 * 60, CAL_DAY_END = 18 * 60;
+const C = { id: 0, user: 1, date: 2, day: 3, type: 4, start: 5, end: 6, hours: 7,
+            activity: 8, color: 9, notes: 10, created: 11, updated: 12 };
+
+function getCalendarSheet() {
+  let sheet = book().getSheetByName(CALENDAR_SHEET);
+  if (!sheet) {
+    sheet = book().insertSheet(CALENDAR_SHEET);
+    sheet.appendRow(CAL_HEADERS);
+    styleHeader(sheet, CAL_HEADERS.length);
+    sheet.getRange("E2:E").setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInList(CAL_TYPES, true).build());
+  }
+  return sheet;
+}
+
+// Times are stored as text ("09:30") so the sheet doesn't turn them into dates
+function calTime(v) {
+  if (v instanceof Date) return ("0" + v.getHours()).slice(-2) + ":" + ("0" + v.getMinutes()).slice(-2);
+  const m = String(v || "").replace(/^'/, "").match(/^(\d{1,2}):(\d{2})/);
+  return m ? ("0" + m[1]).slice(-2) + ":" + m[2] : "";
+}
+function calMin(t) { const p = String(t).split(":"); return Number(p[0]) * 60 + Number(p[1]); }
+function calDayName(iso) {
+  const p = iso.split("-").map(Number);
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(p[0], p[1] - 1, p[2]).getDay()];
+}
+
+function rowToEntry(r) {
+  return {
+    id: String(r[C.id]), date: fmt(r[C.date], "yyyy-MM-dd"), type: String(r[C.type]),
+    start: calTime(r[C.start]), end: calTime(r[C.end]),
+    activity: String(r[C.activity]), color: String(r[C.color] || "#ffffff"), notes: String(r[C.notes])
+  };
+}
+
+function validateEntry(e, needType) {
+  const isTime = (s) => /^\d{2}:\d{2}$/.test(s);
+  if (!e || !String(e.activity || "").trim()) return "Activity is required.";
+  if (String(e.activity).length > 200) return "Keep the activity under 200 characters.";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return "Choose a date.";
+  if (needType && CAL_TYPES.indexOf(e.type) === -1) return "Type must be Plan or Actual.";
+  if (!isTime(e.start) || !isTime(e.end)) return "Choose a start and end time.";
+  const s = calMin(e.start), en = calMin(e.end);
+  if (s < CAL_DAY_START || en > CAL_DAY_END) return "Times must be between 9:00 AM and 6:00 PM.";
+  if (en <= s) return "End time must be after the start time.";
+  if (e.color && !/^#[0-9a-fA-F]{6}$/.test(e.color)) return "Colour is not valid.";
+  return "";
+}
+
+function entryRow(id, name, date, type, e, created, now) {
+  return [id, clean(name), date, calDayName(date), type, "'" + e.start, "'" + e.end,
+          (calMin(e.end) - calMin(e.start)) / 60, clean(e.activity), e.color || "#ffffff",
+          clean(e.notes), created, now];
+}
+
+function findEntry(sheet, id, name) {
+  const rows = sheet.getDataRange().getValues();
+  const index = rows.findIndex((r, i) => i > 0 && String(r[C.id]) === String(id));
+  if (index === -1) return { error: "Entry " + id + " was not found. It may have been deleted." };
+  if (String(rows[index][C.user]).toLowerCase() !== String(name).toLowerCase())
+    return { error: "You can only change your own calendar." };
+  return { rowNumber: index + 1, row: rows[index] };
+}
+
+function getCalendar(data) {
+  const from = String(data.from || ""), to = String(data.to || "");
+  const me = String(data.name || "").toLowerCase();
+  const rows = getCalendarSheet().getDataRange().getValues().slice(1);
+  const entries = rows
+    .filter(r => r[0] && String(r[C.user]).toLowerCase() === me)
+    .map(rowToEntry)
+    .filter(e => (!from || e.date >= from) && (!to || e.date <= to));
+  return { status: "success", entries: entries };
+}
+
+// One entry, optionally on several dates and as Plan + Actual
+function addCalendarEntry(data) {
+  const e = data.entry || {};
+  const dates = Array.isArray(data.dates) && data.dates.length ? data.dates : [e.date];
+  const types = Array.isArray(data.types) && data.types.length ? data.types : [e.type];
+  if (dates.length > 7) return { status: "error", message: "You can add to at most 7 days at once." };
+  for (const d of dates) {
+    const error = validateEntry(Object.assign({}, e, { date: d }), false);
+    if (error) return { status: "error", message: error };
+  }
+  if (types.some(t => CAL_TYPES.indexOf(t) === -1)) return { status: "error", message: "Type must be Plan or Actual." };
+
+  const sheet = getCalendarSheet();
+  let next = parseInt(nextId(sheet, "CAL").replace(/\D/g, ""), 10);
+  const now = new Date();
+  const rows = [];
+  dates.filter((d, i) => dates.indexOf(d) === i).forEach(d => types.forEach(t => {
+    rows.push(entryRow("CAL-" + String(next++).padStart(4, "0"), data.name, d, t, e, now, now));
+  }));
+  const start = sheet.getLastRow() + 1;
+  sheet.getRange(start, 1, rows.length, CAL_HEADERS.length).setValues(rows);
+  sheet.getRange(start, C.activity + 1, rows.length, 1).setBackgrounds(rows.map(r => [r[C.color]]));
+  return { status: "success", count: rows.length };
+}
+
+function updateCalendarEntry(data) {
+  const e = data.entry;
+  const error = validateEntry(e, true);
+  if (error) return { status: "error", message: error };
+  const sheet = getCalendarSheet();
+  const found = findEntry(sheet, data.id, data.name);
+  if (found.error) return { status: "error", message: found.error };
+  const row = entryRow(found.row[C.id], found.row[C.user], e.date, e.type, e, found.row[C.created], new Date());
+  sheet.getRange(found.rowNumber, 1, 1, CAL_HEADERS.length).setValues([row]);
+  sheet.getRange(found.rowNumber, C.activity + 1).setBackground(row[C.color]);
+  return { status: "success", id: data.id };
+}
+
+function deleteCalendarEntry(data) {
+  const sheet = getCalendarSheet();
+  const found = findEntry(sheet, data.id, data.name);
+  if (found.error) return { status: "error", message: found.error };
+  sheet.deleteRow(found.rowNumber);
+  return { status: "success", id: data.id };
+}
+
 // ---------- Entry point ----------
 function doPost(e) {
   const lock = LockService.getScriptLock();
   try {
     const data = JSON.parse(e.postData.contents);
     const writes = ["signup", "login", "logout", "addTask", "updateTask", "deleteTask", "assignTask",
-                    "addReminder", "updateReminder", "closeReminder", "extendReminder", "deleteReminder"];
+                    "addReminder", "updateReminder", "closeReminder", "extendReminder", "deleteReminder",
+                    "addCalendarEntry", "updateCalendarEntry", "deleteCalendarEntry"];
     if (writes.indexOf(data.action) !== -1) lock.waitLock(10000);
 
     // No login needed for these two
@@ -539,6 +671,10 @@ function doPost(e) {
       case "closeReminder":    return reply(closeReminder(data));
       case "extendReminder":   return reply(extendReminder(data));
       case "deleteReminder":   return reply(deleteReminder(data));
+      case "getCalendar":         return reply(getCalendar(data));
+      case "addCalendarEntry":    return reply(addCalendarEntry(data));
+      case "updateCalendarEntry": return reply(updateCalendarEntry(data));
+      case "deleteCalendarEntry": return reply(deleteCalendarEntry(data));
       default:                 return reply({ status: "error", message: "Unknown action." });
     }
   } catch (err) {

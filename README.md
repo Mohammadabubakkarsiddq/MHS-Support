@@ -19,6 +19,7 @@
 | add-task.js | Add Task page logic |
 | view-tasks.js | View & Edit Task page logic |
 | reminder-form.js / add-reminder.js / reminders.js | Reminder pages |
+| calendar.html / calendar.js | My Calendar – Plan vs Actual, 9 AM to 6 PM, week or day view |
 | popup.js / popup.css | Animated pop-ups and delete confirmation |
 | Code.gs | Google Apps Script backend (goes into Google Sheets, not VS Code) |
 | Tasks_sheet_model.csv | Sample of the Tasks sheet (optional test data) |
@@ -67,6 +68,27 @@ To test with sample data: in the Tasks tab, File > Import > Upload Tasks_sheet_m
 | M | Closed On Time | Auto: Yes if closed on or before the final date |
 | N | Notes | User + extension reasons |
 | O-P | Created On / Last Updated | Auto |
+
+**Calendar** (created automatically on first use)
+
+| Column | Field | Filled by |
+|---|---|---|
+| A | Entry ID | Auto (CAL-0001 ...) |
+| B | Username | Auto |
+| C-D | Date / Day | User / Auto |
+| E | Type | User: Plan or Actual |
+| F-G | Start Time / End Time | User (9:00 to 18:00, 30-minute steps) |
+| H | Hours | Auto |
+| I | Activity | User (cell is coloured with the chosen colour) |
+| J | Color | User |
+| K | Notes | User |
+| L-M | Created On / Last Updated | Auto |
+
+## My Calendar
+- Each day has two columns: **Plan** (what you planned) and **Actual** (what you really did).
+- Click an empty slot to add an entry there; click an entry to edit, delete, or "Copy to Actual".
+- "Both" adds the same entry to Plan and Actual. "Also add on" repeats it on other days of the same week.
+- Click a day header to open that day on its own. Hours planned vs actual show under each column.
 
 ## Setup / update
 1. Open your Google Sheet > Extensions > Apps Script. Replace everything with the new Code.gs and save.
