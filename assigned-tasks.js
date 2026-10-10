@@ -85,8 +85,8 @@ function render() {
       <td class="nowrap muted">${formatDMY((t.updatedOn || "").slice(0, 10))}</td>
       <td class="nowrap">
         <div class="row-actions">
-          <button type="button" class="btn-edit" data-edit="${esc(t.id)}">Edit</button>
-          <button type="button" class="btn-delete" data-delete="${esc(t.id)}">Delete</button>
+          <button type="button" class="btn-edit" data-edit="${esc(t.key)}">Edit</button>
+          <button type="button" class="btn-delete" data-delete="${esc(t.key)}">Delete</button>
         </div>
       </td>
     </tr>`).join("");
@@ -94,11 +94,11 @@ function render() {
 
 // ---------- Edit ----------
 function openEdit(id) {
-  const t = tasks.find((x) => x.id === id);
+  const t = tasks.find((x) => x.key === id);
   if (!t) return;
   editingId = id;
   fillTaskForm(editForm, t);
-  $("modalTitle").textContent = `Edit task ${id} · ${t.username}`;
+  $("modalTitle").textContent = `Edit task ${t.id} · ${t.username}`;
   modal.classList.add("show");
   document.body.classList.add("modal-open");
   editForm.elements.title.focus();
@@ -130,17 +130,17 @@ editForm.addEventListener("submit", async (e) => {
 });
 
 function askDelete(id) {
-  const t = tasks.find((x) => x.id === id);
+  const t = tasks.find((x) => x.key === id);
   if (!t) return;
   showConfirm(
-    `"${t.title}" (${t.id}) will be removed from ${t.username}'s task list and the sheet. This can't be undone.`,
+    `"${t.title}" (${t.id}) will be removed from ${t.username}'s task list. This can't be undone.`,
     { title: "Delete this task?", yesLabel: "Yes, delete", noLabel: "Keep it" },
     async () => {
       try {
         const res = await callSheet({ action: "deleteTask", id });
         if (res.status !== "success") throw new Error(res.message);
         if (editingId === id) closeEdit();
-        showPopup(`Task ${id} deleted.`, "success");
+        showPopup(`Task ${t.id} deleted.`, "success");
         await loadTasks();
       } catch (err) {
         showPopup(serverError(err));

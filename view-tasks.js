@@ -118,7 +118,7 @@ function askDelete(id) {
   const t = tasks.find((x) => x.id === id);
   if (!t) return;
   showConfirm(
-    `"${t.title}" (${t.id}) will be removed from the sheet. This can't be undone.`,
+    `"${t.title}" (${t.id}) will be deleted. This can't be undone.`,
     { title: "Delete this task?", yesLabel: "Yes, delete", noLabel: "Keep it" },
     async () => {
       try {

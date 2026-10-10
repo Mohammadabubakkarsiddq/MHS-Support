@@ -117,7 +117,7 @@ function askClose(r) {
 
 function askDelete(r) {
   showConfirm(
-    `"${r.description}" (${r.id}) will be removed from the sheet. This can't be undone.`,
+    `"${r.description}" (${r.id}) will be deleted. This can't be undone.`,
     { title: "Delete this reminder?", yesLabel: "Yes, delete", noLabel: "Keep it" },
     () => send({ action: "deleteReminder", id: r.id }, `Reminder ${r.id} deleted.`)
       .catch((err) => showPopup(serverError(err)))

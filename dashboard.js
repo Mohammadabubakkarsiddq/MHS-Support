@@ -118,7 +118,7 @@ function renderCards(list, pick, from, to) {
       : `<b>${pct}%</b> of total tasks`;
     return `
       <article class="panel stat" style="--accent:${c.color}">
-        <div class="stat-label"><h3>${c.label}</h3><span class="tag">sheet</span></div>
+        <div class="stat-label"><h3>${c.label}</h3><span class="tag">live</span></div>
         <div class="stat-value">${tasks.length}<span class="dot"></span></div>
         <p class="stat-line">${first}</p>
         <p class="stat-line">${detailLine(c.key, tasks)}</p>

@@ -1,8 +1,4 @@
-// =============================================================
-// STEP 1: Paste your Google Apps Script Web App URL here
-// (see README.md for how to get it)
-// =============================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztd0F_2vTblNOxiExnoFFZsyaLhKmPLP6s4GsG7mRP2In0nnIqG51877J-KBFJK6Gn/exec";
+// Backend: Supabase (see api.js). callSheet() lives there.
 
 // ---------- Pop-up helper ----------
 function showPopup(message, type = "error", onClose) {
@@ -18,27 +14,6 @@ function showPopup(message, type = "error", onClose) {
     popup.classList.remove("show");
     if (onClose) onClose();
   };
-}
-
-// ---------- Send data to Google Sheets ----------
-async function callSheet(data) {
-  // The login token proves who you are; the sheet ignores any name sent by the page
-  const token = sessionStorage.getItem("token");
-  // text/plain avoids the browser's CORS pre-check, which Apps Script can't answer
-  const response = await fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(token ? { ...data, token } : data),
-  });
-  const result = await response.json();
-
-  // Session expired or missing: back to the login page
-  if (result.code === "AUTH") {
-    sessionStorage.clear();
-    window.location.replace("index.html?expired=1");
-    return new Promise(() => {}); // stop the calling code here
-  }
-  return result;
 }
 
 // ---------- Show / hide password ----------
@@ -98,7 +73,6 @@ if (signupForm) {
     const name = $("name").value.trim();
     const email = $("email").value.trim().toLowerCase();
     const number = $("number").value.trim();
-    const role = signupForm.querySelector("input[name=role]:checked").value;
 
     if (name.length < 2) return fail($("name"), "Enter your name.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail($("email"), "Enter a valid mail ID, like name@example.com.");
@@ -111,17 +85,21 @@ if (signupForm) {
     btn.disabled = true;
     btn.textContent = "Creating account...";
     try {
-      const result = await callSheet({ action: "signup", name, email, number, role, password: pass.value });
+      const result = await callSheet({ action: "signup", name, email, number, password: pass.value });
       if (result.status === "success") {
         sessionStorage.setItem("lastEmail", email);
-        showPopup("Account created! Log in with your mail ID and password.", "success", () => {
+        showPopup(result.confirm
+          ? "Account created! We've sent a confirmation mail. Click the link in it, then log in."
+          : "Account created! Log in with your mail ID and password.", "success", () => {
           window.location.href = "index.html";
         });
       } else {
         showPopup(result.message);
       }
     } catch (err) {
-      showPopup("Could not reach the server. Check the SCRIPT_URL in script.js.");
+      showPopup(err instanceof TypeError
+        ? "Could not reach the server. Check your internet connection and try again."
+        : err.message);
     } finally {
       btn.disabled = false;
       btn.textContent = "Sign up";
@@ -156,7 +134,8 @@ if (loginForm) {
     try {
       const result = await callSheet({ action: "login", email, password });
       if (result.status === "success") {
-        sessionStorage.clear();
+        // Keep Supabase's login (stored in this tab); replace only the app's own details
+        ["username", "role", "email", "number", "token", "lastEmail"].forEach((k) => sessionStorage.removeItem(k));
         sessionStorage.setItem("username", result.name);
         sessionStorage.setItem("role", result.role);
         sessionStorage.setItem("email", result.email || "");
@@ -167,7 +146,9 @@ if (loginForm) {
         showPopup(result.message, /incorrect/i.test(result.message) ? "login" : "error");
       }
     } catch (err) {
-      showPopup("Could not reach the server. Check the SCRIPT_URL in script.js.");
+      showPopup(err instanceof TypeError
+        ? "Could not reach the server. Check your internet connection and try again."
+        : err.message);
     } finally {
       btn.disabled = false;
       btn.textContent = "Login";

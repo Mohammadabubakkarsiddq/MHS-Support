@@ -21,68 +21,26 @@
 | reminder-form.js / add-reminder.js / reminders.js | Reminder pages |
 | calendar.html / calendar.js | My Calendar – Plan vs Actual, 9 AM to 6 PM, week or day view |
 | popup.js / popup.css | Animated pop-ups and delete confirmation |
-| Code.gs | Google Apps Script backend (goes into Google Sheets, not VS Code) |
+| api.js | Connects every page to the Supabase database (project URL + public key) |
 | Tasks_sheet_model.csv | Sample of the Tasks sheet (optional test data) |
 
-## Google Sheet model
+## Database (Supabase)
+The app stores everything in Supabase (free plan). `api.js` holds the project URL and the public key.
 
-The script creates two tabs automatically the first time they're needed.
+| Table | What it holds |
+|---|---|
+| profiles | One row per person: name, mail ID, mobile number, role (Employee / Admin) |
+| tasks | Tasks, numbered TSK-0001, TSK-0002... separately for each person |
+| reminders | Reminders, numbered RMD-0001... separately for each person |
+| calendar_entries | My Calendar entries (Plan / Actual, 9 AM – 6 PM) |
 
-**Users** – Name | Number | Email | Password (hashed) | Created On
+To browse everyone's data with names, open **Table Editor** and pick the views `team_tasks`, `team_reminders` or `team_calendar`.
 
-**Tasks**
+Security rules (in the database): everyone sees only their own data; Admins can read everyone's data and edit tasks they assigned; employees can change only the status and remarks of tasks assigned to them. Passwords are stored one-way scrambled by Supabase and can't be viewed by anyone.
 
-| Column | Field | Filled by | Values |
-|---|---|---|---|
-| A | Task ID | Auto | TSK-0001, TSK-0002 ... |
-| B | Username | Auto (logged-in user) | Same as signup name |
-| C | Task Title | User | Required |
-| D | Description | User | Optional |
-| E | Category | User | Audit & Compliance, IT & Assets, Operations, Marketing, Reporting, Meetings, Other |
-| F | Priority | User | High / Medium / Low |
-| G | Status | User | Not Started / Pending / Ongoing / Hold / Completed / Cancelled |
-| H | Start Date | User | Required – the dashboard date range filters on this |
-| I | Due Date | User | Optional – used for "Overdue" |
-| J | Completed Date | Auto | Set when status becomes Completed, cleared if reopened |
-| K | Remarks | User | Optional |
-| L | Created On | Auto | Date + time |
-| M | Last Updated | Auto | Date + time |
+**Make someone Admin:** SQL Editor → `update public.profiles set role = 'Admin' where email = 'their@mail.com';` (they log out and in again).
 
-To test with sample data: in the Tasks tab, File > Import > Upload Tasks_sheet_model.csv >
-"Replace current sheet". Change the Username column to your signup name, then delete the rows when done.
-
-**Reminders** (created automatically on first use)
-
-| Column | Field | Filled by |
-|---|---|---|
-| A | Reminder ID | Auto (RMD-0001 ...) |
-| B | Username | Auto |
-| C | Description | User |
-| D | Priority | User (High / Medium / Low) |
-| E | Category | User (Meeting, Mail, Update, Follow-up, Call, Payment, Other) |
-| F-H | 1st / 2nd / Final Reminder | User (1st and Final required) |
-| I | Status | Auto: Open / Extended / Closed |
-| J | Times Extended | Auto |
-| K | Original Final Date | Auto (saved on first extension) |
-| L | Closed On | Auto |
-| M | Closed On Time | Auto: Yes if closed on or before the final date |
-| N | Notes | User + extension reasons |
-| O-P | Created On / Last Updated | Auto |
-
-**Calendar** (created automatically on first use)
-
-| Column | Field | Filled by |
-|---|---|---|
-| A | Entry ID | Auto (CAL-0001 ...) |
-| B | Username | Auto |
-| C-D | Date / Day | User / Auto |
-| E | Type | User: Plan or Actual |
-| F-G | Start Time / End Time | User (9:00 to 18:00, 30-minute steps) |
-| H | Hours | Auto |
-| I | Activity | User (cell is coloured with the chosen colour) |
-| J | Color | User |
-| K | Notes | User |
-| L-M | Created On / Last Updated | Auto |
+**Reset a password:** Authentication → Users → the person → Send password recovery.
 
 ## My Calendar
 - Each day has two columns: **Plan** (what you planned) and **Actual** (what you really did).
@@ -91,12 +49,9 @@ To test with sample data: in the Tasks tab, File > Import > Upload Tasks_sheet_m
 - Click a day header to open that day on its own. Hours planned vs actual show under each column.
 
 ## Setup / update
-1. Open your Google Sheet > Extensions > Apps Script. Replace everything with the new Code.gs and save.
-2. Deploy > Manage deployments > pencil (Edit) > Version: **New version** > Deploy.
-   The Web App URL stays the same, so script.js doesn't need changing.
-   (First time? Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone,
-   then paste the URL into script.js.)
-3. In VS Code, right-click index.html > Open with Live Server.
+1. Supabase SQL Editor: run `supabase-setup.sql`, then `supabase-update-1.sql` (once each).
+2. Authentication → Sign In / Providers → Email: turn **Confirm email** off (or keep it on and people must click the mail link before logging in).
+3. Upload all files in this folder to the GitHub repo. No server or Apps Script needed.
 
 ## How the dashboard counts
 - A task is counted in the date range when its **Start Date** falls inside the range.

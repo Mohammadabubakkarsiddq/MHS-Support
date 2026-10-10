@@ -61,7 +61,7 @@ function textOn(hex) {
   return lum > 0.6 ? "#23163a" : "#ffffff";
 }
 
-// ---------- Load from the sheet (always the whole week) ----------
+// ---------- Load the whole week ----------
 async function loadWeek(force) {
   const mon = mondayOf(anchor);
   if (!force && loadedWeek === mon) { render(); return; }

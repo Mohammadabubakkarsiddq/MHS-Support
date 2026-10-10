@@ -96,11 +96,11 @@ function statusBadge(status) {
 }
 function serverError(err) {
   return err instanceof TypeError
-    ? "Could not reach the server. Check the SCRIPT_URL in script.js."
+    ? "Could not reach the server. Check your internet connection and try again."
     : err.message;
 }
 
-// ---------- Load this user's tasks from the sheet ----------
+// ---------- Load this user's tasks ----------
 async function fetchMyTasks() {
   const res = await callSheet({ action: "getTasks", name: CURRENT_USER });
   if (res.status !== "success") throw new Error(res.message);
