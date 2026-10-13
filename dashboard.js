@@ -61,7 +61,7 @@ async function loadTasks() {
     allTasks = taskResult.value;
     lastSync = new Date();
     render();
-    showTodaysReminders();
+    showNewAssigned(showTodaysReminders);
   } else {
     syncText.textContent = "Could not load tasks";
     renderReminders();
@@ -93,6 +93,7 @@ function render() {
   drawStatusChart(list);
   drawDailyChart(list, days);
   renderTable(list);
+  renderAssigned();
   renderReminders();
   updateSyncText();
 }
@@ -249,6 +250,47 @@ function renderReminders() {
         <td>${reminderStatusBadge(r)}</td>
       </tr>`).join("")
     : `<tr class="empty-row"><td colspan="5">No active reminders. <a href="add-reminder.html">Add a reminder</a></td></tr>`;
+}
+
+// ---------- Tasks an Admin assigned to me (all open ones, not just this date range) ----------
+function renderAssigned() {
+  const panel = document.getElementById("assignedPanel");
+  const mine = allTasks.filter(isAssignedToMe);
+  panel.hidden = !mine.length;
+  if (!mine.length) return;
+  const open = mine.filter((t) => t.status !== "Completed" && t.status !== "Cancelled");
+  const sorted = [...open].sort((a, b) =>
+    (a.seen === b.seen ? 0 : a.seen ? 1 : -1) || (a.dueDate || "9999").localeCompare(b.dueDate || "9999"));
+  document.getElementById("assignedCount").textContent =
+    `${open.length} open${mine.length > open.length ? `, ${mine.length - open.length} done` : ""}`;
+  document.getElementById("assignedRows").innerHTML = sorted.length
+    ? sorted.map((t) => `
+      <tr>
+        <td class="nowrap muted">${esc(t.id)}</td>
+        <td class="title-cell"><a href="view-tasks.html?edit=${encodeURIComponent(t.id)}">${esc(t.title)}</a>${t.seen ? "" : ' <span class="new-badge">New</span>'}</td>
+        <td>${esc(t.assignedBy)}</td>
+        <td class="prio-${esc(t.priority)}">${esc(t.priority)}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td class="nowrap ${isOverdue(t) ? "overdue" : ""}">${formatDMY(t.dueDate)}</td>
+      </tr>`).join("")
+    : `<tr class="empty-row"><td colspan="6">All assigned tasks are done.</td></tr>`;
+}
+
+// Pop-up when an Admin has assigned new tasks (until the employee acknowledges them)
+function showNewAssigned(next) {
+  const fresh = allTasks.filter((t) => isAssignedToMe(t) && !t.seen);
+  if (!fresh.length) return next();
+  const markSeen = () => {
+    fresh.forEach((t) => (t.seen = true));
+    renderAssigned();
+    return callSheet({ action: "markAssignedSeen", ids: fresh.map((t) => t.id) }).catch(() => {});
+  };
+  showAssignedPopup(fresh,
+    async () => {
+      await markSeen();
+      window.location.href = fresh.length === 1 ? "view-tasks.html?edit=" + encodeURIComponent(fresh[0].id) : "view-tasks.html";
+    },
+    () => { markSeen(); setTimeout(next, 250); });
 }
 
 // Pop-up once per login when reminders are due today (or overdue)

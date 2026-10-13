@@ -8,10 +8,17 @@
   const SUPABASE_URL = "https://ywexhvgacwwcrpxuwslq.supabase.co";
   const SUPABASE_KEY = "sb_publishable_6arT_8LP3flGzSN7-_Lr8A_gKMSajav"; // public key, safe in the website
 
+  // The reset-password page reads the link from the mail (it arrives after "#")
+  const ON_RESET_PAGE = /reset-password\.html$/.test(window.location.pathname);
+  const LINK_PARAMS = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
   // Login lasts for this browser tab, like before
   const db = window.supabase
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+        auth: {
+          storage: window.sessionStorage, persistSession: true, autoRefreshToken: true,
+          detectSessionInUrl: ON_RESET_PAGE, flowType: "implicit",
+        },
       })
     : null;
 
@@ -85,6 +92,65 @@
     return ok({ name: p.name, role: p.role, email: p.email, number: p.number || "", token: "supabase" });
   }
 
+  async function changePassword(d) {
+    await myId();   // must be logged in
+    const { error } = await db.auth.updateUser({ password: d.password });
+    if (error) {
+      if (/different from the old/i.test(error.message)) return fail("The new password must be different from your current one.");
+      if (/reauthenticat|recent/i.test(error.message)) return fail("For security, log out and log in again, then change your password.");
+      return fail(error.message);
+    }
+    return ok();
+  }
+
+  // Fresh name/role from the database (so a role change shows straight away)
+  async function me() {
+    const uid = await myId();
+    const { data, error } = await db.from("profiles").select("name, role, email, number").eq("id", uid).single();
+    check(error);
+    return ok({ name: data.name, role: data.role, email: data.email, number: data.number || "" });
+  }
+
+  // ---------- Forgot password ----------
+  async function requestPasswordReset(d) {
+    const email = text(d.email).toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Enter a valid mail ID.");
+    const redirectTo = new URL("reset-password.html", window.location.href).href;
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) {
+      if (/rate limit|security purposes|seconds/i.test(error.message))
+        return fail("Too many reset requests. Please wait a few minutes and try again.");
+      return fail(error.message);
+    }
+    return ok();   // same answer whether or not the mail ID exists (keeps accounts private)
+  }
+
+  // Is this page open from a valid reset link?
+  async function checkResetLink() {
+    if (LINK_PARAMS.get("error_description")) {
+      const expired = /expired|invalid/i.test(LINK_PARAMS.get("error_description"));
+      return fail(expired
+        ? "This reset link has expired or was already used. Please request a new one."
+        : LINK_PARAMS.get("error_description").replace(/\+/g, " "));
+    }
+    const { data } = await db.auth.getSession();
+    if (!data.session || LINK_PARAMS.get("type") !== "recovery")
+      return fail("Open this page using the link in your reset mail. If the link is old, request a new one.");
+    return ok({ email: data.session.user.email });
+  }
+
+  async function resetPassword(d) {
+    const { data } = await db.auth.getSession();
+    if (!data.session) return fail("This reset link has expired. Please request a new one.");
+    const { error } = await db.auth.updateUser({ password: d.password });
+    if (error) {
+      if (/different from the old/i.test(error.message)) return fail("The new password must be different from your old one.");
+      return fail(error.message);
+    }
+    await db.auth.signOut();   // log in fresh with the new password
+    return ok();
+  }
+
   async function logout() {
     await db.auth.signOut();
     return ok();
@@ -93,9 +159,21 @@
   // =============================================================
   // TASKS
   // =============================================================
-  const TASK_COLS = "id, task_no, user_id, assigned_by, title, description, category, priority, status, " +
+  const BASE_COLS = "id, task_no, user_id, assigned_by, title, description, category, priority, status, " +
     "start_date, due_date, completed_date, remarks, created_at, updated_at, " +
     "owner:profiles!tasks_user_id_fkey(name), assigner:profiles!tasks_assigned_by_fkey(name)";
+  let hasSeenColumn = true;   // false until supabase-update-2.sql has been run
+  const taskCols = () => (hasSeenColumn ? BASE_COLS + ", seen_by_assignee" : BASE_COLS);
+
+  // Run a task query; if the "seen" column doesn't exist yet, retry without it
+  async function taskQuery(build) {
+    let res = await build(taskCols());
+    if (res.error && hasSeenColumn && /seen_by_assignee/.test(res.error.message || "")) {
+      hasSeenColumn = false;
+      res = await build(taskCols());
+    }
+    return res;
+  }
 
   function toTask(r) {
     return {
@@ -108,6 +186,7 @@
       remarks: r.remarks,
       createdOn: stamp(r.created_at), updatedOn: stamp(r.updated_at),
       assignedBy: r.assigner ? r.assigner.name : "",
+      seen: r.seen_by_assignee !== false,   // missing column (update 2 not run yet) = treat as seen
     };
   }
 
@@ -129,9 +208,10 @@
 
   // "TSK-0003" = my own task no. 3; "row:57" = a specific task (Assigned Tasks page)
   async function findTask(id, uid) {
-    let q = db.from("tasks").select(TASK_COLS);
-    q = String(id).startsWith("row:") ? q.eq("id", numOf(id)) : q.eq("user_id", uid).eq("task_no", numOf(id));
-    const { data, error } = await q.maybeSingle();
+    const { data, error } = await taskQuery((cols) => {
+      const q = db.from("tasks").select(cols);
+      return (String(id).startsWith("row:") ? q.eq("id", numOf(id)) : q.eq("user_id", uid).eq("task_no", numOf(id))).maybeSingle();
+    });
     check(error);
     return data;
   }
@@ -147,7 +227,7 @@
 
   async function getTasks() {
     const uid = await myId();
-    const { data, error } = await db.from("tasks").select(TASK_COLS).eq("user_id", uid).order("task_no");
+    const { data, error } = await taskQuery((cols) => db.from("tasks").select(cols).eq("user_id", uid).order("task_no"));
     check(error);
     return ok({ tasks: data.map(toTask) });
   }
@@ -197,6 +277,17 @@
     return ok({ id: "TSK-" + pad(row.task_no) });
   }
 
+  // The employee has seen these assigned tasks (stops the pop-up)
+  async function markAssignedSeen(d) {
+    const uid = await myId();
+    const nos = (d.ids || []).map(numOf).filter((n) => n > 0);
+    if (!nos.length || !hasSeenColumn) return ok();
+    const { error } = await db.from("tasks").update({ seen_by_assignee: true })
+      .eq("user_id", uid).in("task_no", nos);
+    check(error);
+    return ok();
+  }
+
   // ---------- Admin: employees + assigned tasks ----------
   let employeeIds = {};   // label shown in the dropdown → user id
 
@@ -233,7 +324,7 @@
 
   async function getAssignedTasks() {
     const uid = await myId();
-    const { data, error } = await db.from("tasks").select(TASK_COLS).eq("assigned_by", uid).order("created_at");
+    const { data, error } = await taskQuery((cols) => db.from("tasks").select(cols).eq("assigned_by", uid).order("created_at"));
     check(error);
     return ok({ tasks: data.map(toTask) });
   }
@@ -432,8 +523,8 @@
   // The one function every page uses
   // =============================================================
   const ACTIONS = {
-    signup, login, logout,
-    getTasks, addTask, updateTask, deleteTask,
+    signup, login, logout, changePassword, me, requestPasswordReset, checkResetLink, resetPassword,
+    getTasks, addTask, updateTask, deleteTask, markAssignedSeen,
     getEmployees, assignTask, getAssignedTasks,
     getReminders, addReminder, updateReminder, closeReminder, extendReminder, deleteReminder,
     getCalendar, addCalendarEntry, updateCalendarEntry, deleteCalendarEntry,

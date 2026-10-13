@@ -494,3 +494,39 @@ body.is-admin [data-admin] { display: flex !important; }
 .field .cal-check.boxed { display: flex; padding: 11px 0; }
 .field .day-pick input, .field .cal-check input { width: 16px; height: 16px; padding: 0; flex: none; }
 .day-pick { white-space: nowrap; }
+
+/* ---------- Change password ---------- */
+.pm-action {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;
+  padding: 10px; border-radius: 10px; border: 1.5px solid var(--purple-line); background: var(--white);
+  color: var(--purple); font-family: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+}
+.pm-action:hover { background: var(--purple-soft); }
+.pm-action:focus-visible, .pm-logout:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+#pwModal .pw-wrap { position: relative; }
+#pwModal .pw-wrap input { padding-right: 44px; }
+#pwModal .pw-toggle {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none;
+  color: var(--muted); cursor: pointer; padding: 4px; display: grid; place-items: center;
+}
+#pwModal .pw-toggle svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#pwModal .pw-rules { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 9px; font-size: 0.8rem; color: var(--muted); }
+#pwModal .pw-rules li { display: flex; align-items: center; gap: 6px; }
+#pwModal .pw-rules li::before { content: ""; width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid #cbc3d8; background: #fff; }
+#pwModal .pw-rules li.ok { color: #1f9d55; font-weight: 600; }
+#pwModal .pw-rules li.ok::before {
+  border-color: #1f9d55;
+  background: #1f9d55 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;
+}
+#pwModal .match-note { font-size: 0.8rem; margin-top: 7px; font-weight: 600; min-height: 1em; }
+#pwModal .match-note.ok { color: #1f9d55; }
+#pwModal .match-note.bad { color: var(--red); }
+@media (max-width: 520px) { #pwModal .pw-rules { grid-template-columns: 1fr; } }
+
+/* ---------- Assigned to you (dashboard) ---------- */
+.assigned-panel { margin-bottom: 22px; border-left: 4px solid var(--purple); }
+.assigned-panel h3 .count { margin-left: 6px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.new-badge {
+  display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+  background: var(--purple); color: #fff; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; vertical-align: 1px;
+}

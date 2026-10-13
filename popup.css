@@ -95,3 +95,5 @@
 @media (prefers-reduced-motion: reduce) {
   .popup-anime, .popup-anime *, .popup-backdrop.show { animation: none !important; }
 }
+
+.pp-custom-label .pp-fallback { max-width: 300px; }

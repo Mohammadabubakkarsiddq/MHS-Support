@@ -22,6 +22,7 @@
 | calendar.html / calendar.js | My Calendar – Plan vs Actual, 9 AM to 6 PM, week or day view |
 | popup.js / popup.css | Animated pop-ups and delete confirmation |
 | api.js | Connects every page to the Supabase database (project URL + public key) |
+| forgot-password.html / reset-password.html / recovery.js | Forgot password: send reset mail, then set a new password from the mail link |
 | Tasks_sheet_model.csv | Sample of the Tasks sheet (optional test data) |
 
 ## Database (Supabase)
@@ -49,9 +50,11 @@ Security rules (in the database): everyone sees only their own data; Admins can 
 - Click a day header to open that day on its own. Hours planned vs actual show under each column.
 
 ## Setup / update
-1. Supabase SQL Editor: run `supabase-setup.sql`, then `supabase-update-1.sql` (once each).
+1. Supabase SQL Editor: run `supabase-setup.sql`, `supabase-update-1.sql`, then `supabase-update-2.sql` (once each, in order).
 2. Authentication → Sign In / Providers → Email: turn **Confirm email** off (or keep it on and people must click the mail link before logging in).
-3. Upload all files in this folder to the GitHub repo. No server or Apps Script needed.
+3. Authentication → URL Configuration: Site URL = the GitHub Pages address; add `.../reset-password.html` to Redirect URLs (needed for Forgot password).
+4. Authentication → Emails → SMTP Settings: set up your own mail sender (e.g. Gmail with an app password) so reset mails reach everyone.
+5. Upload all files in this folder to the GitHub repo. No server or Apps Script needed. When files change, raise the `?v=` number in the HTML files so browsers load the new versions.
 
 ## How the dashboard counts
 - A task is counted in the date range when its **Start Date** falls inside the range.

@@ -84,7 +84,7 @@ function preparePopup(kind) {
 
   Object.keys(POPUP_KINDS).forEach((k) => box.classList.toggle("pp-" + k, k === kind));
   box.classList.toggle("success", kind === "success");
-  box.classList.remove("pp-show-title");
+  box.classList.remove("pp-show-title", "pp-custom-label");
 
   const closeBtn = document.getElementById("popupClose");
   closeBtn.textContent = cfg.button;
@@ -101,7 +101,14 @@ function preparePopup(kind) {
 
 function useFallback(box) {
   box.querySelector(".pp-art video").hidden = true;
-  box.querySelector(".pp-fallback").hidden = false;
+  const fallback = box.querySelector(".pp-fallback");
+  // A pop-up with its own wording (e.g. "New task") uses the plain picture + its own label
+  if (box.classList.contains("pp-custom-label")) {
+    fallback.src = box.querySelector(".pp-art video").poster;
+    fallback.hidden = false;
+    return;
+  }
+  fallback.hidden = false;
   box.classList.add("pp-no-video");
 }
 
@@ -217,6 +224,60 @@ function showReminderPopup(items, onView) {
 
   closeBtn.textContent = "View reminders";
   cancelBtn.textContent = "Later";
+  cancelBtn.hidden = false;
+  closeBtn.focus();
+
+  const baseClose = closeBtn.onclick;
+  closeBtn.onclick = () => { goView = true; baseClose(); };
+  cancelBtn.onclick = () => { goView = false; baseClose(); };
+}
+
+// ---------- New tasks assigned by an Admin (shown when the dashboard opens) ----------
+// tasks: [{ id, title, assignedBy, dueDate, priority }]
+function showAssignedPopup(tasks, onView, onLater) {
+  const closeBtn = document.getElementById("popupClose");
+  const cancelBtn = ensureCancelButton();
+  let goView = false;
+
+  const names = [...new Set(tasks.map((t) => t.assignedBy || "Admin"))];
+  const who = names.length === 1 ? names[0] : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+  const message = tasks.length === 1
+    ? `${who} assigned you a task.`
+    : `${who} assigned you ${tasks.length} new tasks.`;
+
+  showPopup(message, "reminder", () => { if (goView) { if (onView) onView(); } else if (onLater) onLater(); });
+  const box = document.getElementById("popupBox");
+  box.querySelector(".pp-label-text").textContent = tasks.length === 1 ? "New task" : "New tasks";
+  box.classList.add("pp-custom-label");
+  if (box.classList.contains("pp-no-video")) {         // video already failed: switch to the plain picture
+    box.classList.remove("pp-no-video");
+    useFallback(box);
+  }
+
+  const list = box.querySelector(".pp-list");
+  list.innerHTML = "";
+  tasks.slice(0, 4).forEach((t) => {
+    const row = document.createElement("div");
+    row.className = "pp-item " + (t.priority === "High" ? "late" : "today");
+    const textEl = document.createElement("span");
+    textEl.className = "pp-item-text";
+    textEl.textContent = `${t.id} · ${t.title}`;
+    const tag = document.createElement("span");
+    tag.className = "pp-item-tag";
+    tag.textContent = t.dueDate ? "Due " + t.dueDate.split("-").reverse().join("/") : t.priority + " priority";
+    row.append(textEl, tag);
+    list.append(row);
+  });
+  if (tasks.length > 4) {
+    const more = document.createElement("p");
+    more.className = "pp-more";
+    more.textContent = `+ ${tasks.length - 4} more`;
+    list.append(more);
+  }
+  list.hidden = false;
+
+  closeBtn.textContent = tasks.length === 1 ? "View task" : "View tasks";
+  cancelBtn.textContent = "Got it";
   cancelBtn.hidden = false;
   closeBtn.focus();
 

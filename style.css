@@ -176,3 +176,19 @@ body {
   .trust div { font-size: 0.66rem; flex-direction: column; text-align: center; gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) { .ecg { animation: none; } }
+
+/* ---------- Forgot / reset password ---------- */
+.forgot-link { display: block; width: fit-content; margin: 8px 0 0 auto; font-size: 0.84rem; font-weight: 600; color: #6b2fb3; text-decoration: none; }
+.forgot-link:hover { text-decoration: underline; }
+.forgot-link:focus-visible, .text-btn:focus-visible { outline: 2px solid #6b2fb3; outline-offset: 2px; border-radius: 4px; }
+.sent-note {
+  display: flex; gap: 12px; align-items: flex-start; padding: 16px; margin-bottom: 8px;
+  border-radius: 14px; background: #f3ecfb; border: 1.5px solid #dccbf2; color: #2b1d40;
+}
+.sent-note svg { width: 26px; height: 26px; flex-shrink: 0; fill: none; stroke: #6b2fb3; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sent-note strong { display: block; margin-bottom: 4px; }
+.sent-note p { font-size: 0.88rem; line-height: 1.5; color: #4b3f5e; margin-bottom: 8px; overflow-wrap: anywhere; }
+.sent-note.bad { background: #fdecef; border-color: #f3c2cd; }
+.sent-note.bad svg { stroke: #d9365a; }
+.text-btn { background: none; border: none; padding: 0; font-family: inherit; font-size: 0.86rem; font-weight: 700; color: #6b2fb3; cursor: pointer; text-decoration: underline; }
+.sent-note[hidden], #resetForm[hidden], #forgotForm[hidden] { display: none; }
